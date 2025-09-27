@@ -4,33 +4,87 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="format-detection" content="telephone=no" />
 <title>Demo · Calculadora de riesgo NMIBC tras BCG (no clínica)</title>
+
+<!-- Fuente fija para consistencia -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{--bg:#ffffff;--fg:#0f172a;--muted:#64748b;--accent:#0f172a;--primary:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;}
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  /* Consistencia global */
+  html { color-scheme: light; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  *,*::before,*::after{ box-sizing:border-box }
+  body{
+    margin:0;background:#ffffff;color:#0f172a;
+    font:16px/1.45 "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  }
+
+  :root{
+    --bg:#ffffff;--fg:#0f172a;--muted:#64748b;--accent:#0f172a;
+    --primary:#0ea5e9;--ok:#16a34a;--warn:#f59e0b;--bad:#ef4444;
+    --border:#e5e7eb;--surface:#ffffff;--surface-2:#fcfcfd;
+  }
+
   .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
   .brand{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
   .brand h1{font-size:22px;margin:0}
   .brand small{color:var(--muted);display:block;margin-top:6px}
   .badge{padding:6px 10px;border-radius:999px;background:var(--primary);color:#fff;font-weight:700;font-size:12px;white-space:nowrap}
-  .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 6px 24px rgba(15,23,42,.06)}
-  .hdr{padding:18px 22px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:12px;justify-content:space-between}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 6px 24px rgba(15,23,42,.06)}
+  .hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;justify-content:space-between}
   .hdr .meta{font-size:12px;color:#475569;text-align:right}
   .body{padding:20px}
+
   fieldset{border:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-  label{font-size:13px;color:var(--muted)} input, select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;background:#fff;font-size:14px}
+  label{font-size:13px;color:var(--muted)}
+
+  /* Normalización inputs/select: misma apariencia cross-browser */
+  input, select{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:14px;
+    font-family:inherit; line-height:1.2; color:var(--fg);
+    outline:none; box-shadow:0 0 0 0 rgba(0,0,0,0); transition:border-color .15s, box-shadow .15s;
+    -webkit-appearance:none; appearance:none;
+  }
+  input:focus, select:focus{ border-color:#94a3b8; box-shadow:0 0 0 3px rgba(148,163,184,.25) }
+
+  /* Quitar spinners de number */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+  input[type=number]{ -moz-appearance:textfield }
+
+  /* Select con flecha consistente */
+  select{
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M5 7l5 5 5-5" stroke="%2364758b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    background-repeat:no-repeat; background-position:right 10px center; background-size:16px 16px; padding-right:36px;
+  }
+
   .actions{display:flex;gap:12px;margin-top:14px;flex-wrap:wrap}
-  button{padding:10px 14px;border:0;border-radius:10px;cursor:pointer;font-weight:600}
-  .primary{background:var(--primary);color:#fff} .ghost{background:#f8fafc;color:var(--accent);border:1px solid #e5e7eb}
-  .out{margin-top:18px;border-top:1px dashed #e5e7eb;padding-top:14px}
+  button{
+    padding:10px 14px;border:1px solid transparent;border-radius:10px;cursor:pointer;font-weight:600;font-family:inherit;
+    transition:transform .02s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .primary{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(14,165,233,.25)}
+  .primary:active{ transform:translateY(1px) }
+  .ghost{background:#f8fafc;color:var(--accent);border:1px solid var(--border)}
+  .ghost:active{ transform:translateY(1px) }
+
+  .out{margin-top:18px;border-top:1px dashed var(--border);padding-top:14px}
   .risk{display:flex;align-items:center;gap:10px;margin:8px 0 2px}
   .chip{padding:4px 8px;border-radius:8px;color:#fff;font-weight:700;font-size:13px}
   .low{background:var(--ok)} .mid{background:var(--warn)} .high{background:var(--bad)}
   .muted{color:var(--muted);font-size:13px}
+
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-  .kpi{border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;text-align:center}
-  .kpi h3{margin:0;font-size:18px} .kpi p{margin:6px 0 0;color:#64748b;font-size:12px}
-  .foot{padding:14px 20px;border-top:1px solid #e5e7eb;background:#fcfcfd;border-radius:0 0 14px 14px;color:#475569;font-size:12px}
+  .kpi{border:1px solid var(--border);border-radius:12px;padding:10px 12px;text-align:center;background:#fff}
+  .kpi h3{margin:0;font-size:18px}
+  .kpi p{margin:6px 0 0;color:#64748b;font-size:12px}
+
+  .foot{padding:14px 20px;border-top:1px solid var(--border);background:var(--surface-2);border-radius:0 0 14px 14px;color:#475569;font-size:12px}
+
   @media (max-width:980px){fieldset{grid-template-columns:repeat(2,1fr)}}
   @media (max-width:680px){fieldset{grid-template-columns:1fr} .brand{flex-direction:column} .hdr{flex-direction:column;align-items:flex-start}}
 </style>
@@ -47,9 +101,7 @@
 
     <div class="card">
       <div class="hdr">
-        <div>
-          <strong>Calculadora demo · Riesgo de recurrencia (12 y 24 meses)</strong>
-        </div>
+        <div><strong>Calculadora demo · Riesgo de recurrencia (12 y 24 meses)</strong></div>
         <div class="meta">Versión demostrativa para póster · No utilizar para decisiones clínicas</div>
       </div>
 
@@ -115,17 +167,14 @@
   </div>
 
 <script>
-// Modelo demostrativo (mock): pondera factores para aproximar tres bandas (18%, 42%, 67% a 24m)
 function logistic(x){ return 1/(1+Math.exp(-x)); }
 
 function calcular(){
-  // Demografía / comorbilidad
   const edad = +document.getElementById('edad').value || 70;
   const sexo = +document.getElementById('sexo').value;
   const charlson = +document.getElementById('charlson').value || 0;
   const imc = +document.getElementById('imc').value || 27;
 
-  // Tumor
   const estadio = +document.getElementById('estadio').value;
   const grado = +document.getElementById('grado').value;
   const cis = +document.getElementById('cis').value;
@@ -133,7 +182,6 @@ function calcular(){
   const tam = +document.getElementById('tam').value;
   const recPrev = +document.getElementById('recPrev').value;
 
-  // Tratamiento
   const bcgComp = +document.getElementById('bcgComp').value;
   const mto = +document.getElementById('mto').value;
   const nRTU = +document.getElementById('nRTU').value || 0;
@@ -141,7 +189,6 @@ function calcular(){
   const cito = +document.getElementById('cito').value;
   const dias1 = +document.getElementById('dias1').value || 42;
 
-  // Analíticas y otros
   const hb = +document.getElementById('hb').value || 13.5;
   const plt = +document.getElementById('plt').value || 280;
   const crea = +document.getElementById('crea').value || 0.9;
@@ -150,16 +197,15 @@ function calcular(){
   const sonda = +document.getElementById('sonda').value;
   const itu = +document.getElementById('itu').value;
 
-  // Ponderación demostrativa (no clínica)
   let z = -2.1
-    + 0.6*estadio     // T1
-    + 0.7*grado       // alto
-    + 0.6*cis         // CIS
-    + (nTum===1?0.35:(nTum===2?0.75:1.0))  // 2–7 vs >=8
-    + 0.45*tam        // >30mm
+    + 0.6*estadio
+    + 0.7*grado
+    + 0.6*cis
+    + (nTum===1?0.35:(nTum===2?0.75:1.0))
+    + 0.45*tam
     + 0.35*recPrev
-    - 0.45*bcgComp    // inducción completa protege
-    - 0.55*mto        // mantenimiento protege
+    - 0.45*bcgComp
+    - 0.55*mto
     + 0.08*reRTU
     + 0.05*Math.min(nRTU,3)
     + 0.01*Math.max(0, edad-70)
@@ -168,13 +214,13 @@ function calcular(){
     + 0.06*sonda
     + 0.05*itu
     + 0.03*cito
-    + 0.004*Math.max(0, dias1-40)   // demoras largas penalizan levemente
-    + (hb<12?-0.02*(hb-12):0)       // anemia leve sin gran peso
-    + (plt>400?0.05:0)              // plaquetosis
+    + 0.004*Math.max(0, dias1-40)
+    + (hb<12?-0.02*(hb-12):0)
+    + (plt>400?0.05:0)
     + (pcr>10?0.06:0)
     + (crea>1.3?0.04:0)
     + (imc>32?0.03:0)
-    + 0.02*sexo;                    // mujer pequeño incremento (solo demo)
+    + 0.02*sexo;
 
   const p24 = logistic(z);
   const p12 = Math.max(0, p24 - 0.12);
